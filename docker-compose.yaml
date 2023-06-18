@@ -1,0 +1,65 @@
+version: '3.9'
+
+services:
+
+  nginx:
+    build:
+      context: ./containers/nginx/
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./containers/nginx/templates:/etc/nginx/templates
+    restart: always
+    networks:
+      fifo-test:
+        ipv4_address: 10.1.0.10
+
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - fifo-test:/data/db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongodb-user
+      MONGO_INITDB_ROOT_PASSWORD: vNXBObWAlXbs00Kv
+    ports:
+      - "3001:27017"
+    networks:
+      fifo-test:
+
+  redis:
+    image: redis:5.0
+    networks:
+      fifo-test:
+
+  react:
+    image: node:19.6
+    command: npm run start
+    working_dir: /var/www/html/
+    volumes:
+      - ../react-fifo:/var/www/html/
+    networks:
+      fifo-test:
+        ipv4_address: 10.1.0.20
+
+  node:
+    image: node:19.6
+    command: npm run start
+    working_dir: /var/www/html/
+    volumes:
+      - ../node-fifo:/var/www/html/
+    networks:
+      fifo-test:
+        ipv4_address: 10.1.0.30
+
+volumes:
+  fifo-test:
+
+networks:
+  fifo-test:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.1.0.0/24
+          gateway: 10.1.0.1
