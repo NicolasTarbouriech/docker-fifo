@@ -12,26 +12,26 @@ services:
       - ./containers/nginx/templates:/etc/nginx/templates
     restart: always
     networks:
-      fifo-test:
+      fifo_test:
         ipv4_address: 10.1.0.10
 
   mongodb:
     image: mongo:latest
     volumes:
-      - fifo-test:/data/db
+      - mg_fifo_test:/var/lib/mongodb/data
+      - ./containers/mongodb/init:/docker-entrypoint-initdb.d
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: mongodb-user
-      MONGO_INITDB_ROOT_PASSWORD: vNXBObWAlXbs00Kv
-    ports:
-      - "3001:27017"
+      - MONGO_INITDB_ROOT_USERNAME=mongodb-user
+      - MONGO_INITDB_ROOT_PASSWORD=vNXBObWAlXbs00Kv
+      - MONGO_INITDB_DATABASE=fifo-db
     networks:
-      fifo-test:
+      fifo_test:
 
   redis:
     image: redis:5.0
     networks:
-      fifo-test:
+      fifo_test:
 
   react:
     image: node:19.6
@@ -40,7 +40,7 @@ services:
     volumes:
       - ../react-fifo:/var/www/html/
     networks:
-      fifo-test:
+      fifo_test:
         ipv4_address: 10.1.0.20
 
   node:
@@ -49,15 +49,17 @@ services:
     working_dir: /var/www/html/
     volumes:
       - ../node-fifo:/var/www/html/
+    ports:
+      - "3001:3001"
     networks:
-      fifo-test:
+      fifo_test:
         ipv4_address: 10.1.0.30
 
 volumes:
-  fifo-test:
+  mg_fifo_test:
 
 networks:
-  fifo-test:
+  fifo_test:
     driver: bridge
     ipam:
       config:
